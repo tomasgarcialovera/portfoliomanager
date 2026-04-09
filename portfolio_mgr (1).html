@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PORTFOLIO.MGR — Gestión de Carteras</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:     #07090f;
+  --sur:    #0d1117;
+  --sur2:   #111827;
+  --sur3:   #1a2235;
+  --border: #1c2333;
+  --bhi:    #2a3a52;
+  --acc:    #00e5b0;
+  --acc-g:  rgba(0,229,176,.13);
+  --acc2:   #3d9bff;
+  --acc2-g: rgba(61,155,255,.13);
+  --text:   #c9d8f0;
+  --muted:  #48607a;
+  --up:     #00e5b0;
+  --dn:     #ff4560;
+  --amber:  #f5a623;
+  --mono:   'IBM Plex Mono', monospace;
+  --sans:   'IBM Plex Sans', sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;display:flex;flex-direction:column}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,176,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,176,.018) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+/* ── HEADER ── */
+header{position:relative;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:11px 24px;border-bottom:1px solid var(--border);background:rgba(7,9,15,.95);backdrop-filter:blur(14px);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:11px;color:#000;letter-spacing:-1px;flex-shrink:0}
+.logo-title{font-family:var(--mono);font-weight:600;font-size:14px;color:var(--acc);letter-spacing:2px}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-top:1px}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.hdr-clock{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.btn{font-family:var(--mono);font-size:11px;letter-spacing:.8px;padding:7px 15px;border-radius:7px;cursor:pointer;transition:all .18s;border:1px solid;display:flex;align-items:center;gap:6px}
+.btn-acc{background:var(--acc-g);border-color:var(--acc);color:var(--acc)}
+.btn-acc:hover{background:rgba(0,229,176,.25)}
+.btn-blue{background:var(--acc2-g);border-color:var(--acc2);color:var(--acc2)}
+.btn-blue:hover{background:rgba(61,155,255,.25)}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--bhi);color:var(--text)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* ── FX STRIP ── */
+.fx-strip{position:relative;z-index:1;display:flex;border-bottom:1px solid var(--border);background:var(--sur);flex-shrink:0;overflow-x:auto}
+.fx-card{padding:12px 20px;border-right:1px solid var(--border);flex-shrink:0}
+.fx-label{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1.5px;margin-bottom:5px}
+.fx-val{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--acc);line-height:1}
+.fx-val.blue{color:var(--acc2)}
+.fx-val.plain{color:var(--text)}
+.fx-val.amber{color:var(--amber)}
+.fx-hint{font-size:10px;color:var(--muted);margin-top:3px}
+
+/* ── MAIN LAYOUT ── */
+.app-body{display:flex;flex:1;overflow:hidden;position:relative;z-index:1}
+
+/* ── SIDEBAR ── */
+.sidebar{width:240px;flex-shrink:0;background:var(--sur);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sb-title{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1.5px}
+.sb-btn{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:5px;cursor:pointer;background:var(--acc-g);border:1px solid var(--acc);color:var(--acc);transition:all .15s}
+.sb-btn:hover{background:rgba(0,229,176,.25)}
+.client-list{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.client-list::-webkit-scrollbar{width:3px}
+.client-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.client-item{padding:10px 16px;border-bottom:1px solid rgba(28,35,51,.6);cursor:pointer;transition:background .12s;display:flex;align-items:center;gap:10px}
+.client-item:hover{background:var(--sur2)}
+.client-item.active{background:var(--sur3);border-left:2px solid var(--acc);padding-left:14px}
+.client-avatar{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:600;color:#000;flex-shrink:0}
+.client-info{flex:1;min-width:0}
+.client-name{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.client-val{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:1px}
+.client-pnl{font-family:var(--mono);font-size:10px;font-weight:500}
+.c-up{color:var(--up)}
+.c-dn{color:var(--dn)}
+.c-ze{color:var(--muted)}
+
+/* ── MAIN PANEL ── */
+.main-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* tabs */
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--sur);flex-shrink:0;padding:0 20px}
+.tab{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:11px 16px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--acc);border-bottom-color:var(--acc)}
+
+/* content */
+.tab-content{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.tab-content::-webkit-scrollbar{width:4px}
+.tab-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.tab-pane{display:none;padding:20px 24px}
+.tab-pane.on{display:block}
+
+/* ── EMPTY STATE ── */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--muted);font-family:var(--mono)}
+.empty-icon{font-size:40px;opacity:.2}
+.empty p{font-size:12px}
+
+/* ── PORTFOLIO OVERVIEW ── */
+.ov-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.ov-name{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--text)}
+.ov-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.ov-actions{display:flex;gap:8px}
+
+/* metric cards */
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px}
+.metric-card{background:var(--sur);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.metric-label{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1.5px;margin-bottom:7px}
+.metric-val{font-family:var(--mono);font-size:22px;font-weight:500;line-height:1}
+.metric-sub{font-size:10px;color:var(--muted);margin-top:5px}
+
+/* allocation chart */
+.alloc-section{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.chart-card{background:var(--sur);border:1px solid var(--border);border-radius:10px;padding:16px}
+.chart-title{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1.5px;margin-bottom:14px}
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-svg{flex-shrink:0}
+.legend{display:flex;flex-direction:column;gap:7px;flex:1;min-width:0}
+.leg-row{display:flex;align-items:center;gap:8px;font-size:11px}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.leg-label{color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leg-pct{font-family:var(--mono);color:var(--muted);font-size:10px}
+.bar-chart{display:flex;flex-direction:column;gap:8px}
+.bar-row{display:flex;align-items:center;gap:10px}
+.bar-label{font-size:11px;color:var(--text);width:90px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:6px;background:var(--sur2);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.bar-pct{font-family:var(--mono);font-size:10px;color:var(--muted);width:36px;text-align:right}
+
+/* positions table */
+.pos-section{background:var(--sur);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.pos-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.pos-title{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1.5px}
+.pos-search{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:6px;width:180px}
+.pos-search::placeholder{color:var(--muted)}
+.pos-search:focus{outline:none;border-color:var(--acc)}
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:1px solid var(--border)}
+th{font-family:var(--mono);font-size:9px;font-weight:500;color:var(--muted);letter-spacing:1.2px;padding:11px 12px;text-align:right;cursor:pointer;white-space:nowrap;user-select:none}
+th:first-child{text-align:left}
+th:hover{color:var(--acc)}
+tbody tr{border-bottom:1px solid rgba(28,35,51,.5);transition:background .1s;cursor:pointer}
+tbody tr:hover{background:var(--sur2)}
+td{padding:10px 12px;text-align:right;font-size:12px}
+td:first-child{text-align:left}
+.td-sym{font-family:var(--mono);font-weight:600;font-size:12px;color:var(--text)}
+.td-name{font-size:10px;color:var(--muted);margin-top:1px}
+.td-type{font-size:9px;padding:1px 6px;border-radius:3px;font-family:var(--mono);letter-spacing:.5px}
+.type-cedear{background:rgba(0,229,176,.1);color:var(--acc);border:1px solid rgba(0,229,176,.2)}
+.type-accion{background:rgba(61,155,255,.1);color:var(--acc2);border:1px solid rgba(61,155,255,.2)}
+.type-bono{background:rgba(245,166,35,.1);color:var(--amber);border:1px solid rgba(245,166,35,.2)}
+.type-on{background:rgba(155,89,182,.1);color:#bb8fcf;border:1px solid rgba(155,89,182,.2)}
+.type-otro{background:rgba(72,96,122,.1);color:var(--muted);border:1px solid var(--border)}
+.td-mono{font-family:var(--mono)}
+.pnl-pos{color:var(--up);font-family:var(--mono);font-weight:500}
+.pnl-neg{color:var(--dn);font-family:var(--mono);font-weight:500}
+.pnl-ze{color:var(--muted);font-family:var(--mono)}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--sur);border:1px solid var(--bhi);border-radius:14px;padding:24px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;scrollbar-width:thin}
+.modal-title{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--acc);letter-spacing:1px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{cursor:pointer;color:var(--muted);font-size:18px;line-height:1;padding:0 4px}
+.modal-close:hover{color:var(--text)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid.full{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1.2px}
+.field input,.field select{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 10px;border-radius:7px;transition:border-color .15s;width:100%}
+.field input:focus,.field select:focus{outline:none;border-color:var(--acc)}
+.field input::placeholder{color:var(--muted)}
+.field select option{background:var(--sur)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.modal-section{margin-bottom:16px}
+.modal-section-title{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
+/* pos rows in modal */
+.pos-add-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;scrollbar-width:thin;margin-bottom:12px}
+.pos-add-row{display:grid;grid-template-columns:80px 1fr 90px 110px 100px 32px;gap:6px;align-items:end}
+.pos-add-row input,.pos-add-row select{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:6px 8px;border-radius:6px;width:100%}
+.pos-add-row input:focus,.pos-add-row select:focus{outline:none;border-color:var(--acc)}
+.pos-add-row .remove-pos{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:6px 8px;cursor:pointer;font-size:12px;line-height:1}
+.pos-add-row .remove-pos:hover{border-color:var(--dn);color:var(--dn)}
+.add-pos-btn{font-family:var(--mono);font-size:10px;letter-spacing:.8px;padding:6px 12px;border-radius:6px;cursor:pointer;background:transparent;border:1px dashed var(--border);color:var(--muted);transition:all .15s;width:100%}
+.add-pos-btn:hover{border-color:var(--acc);color:var(--acc)}
+.pos-row-header{display:grid;grid-template-columns:80px 1fr 90px 110px 100px 32px;gap:6px;margin-bottom:4px}
+.pos-row-header span{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1px}
+
+/* CSV import */
+.csv-area{background:var(--bg);border:1px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:border-color .15s}
+.csv-area:hover{border-color:var(--acc)}
+.csv-area input[type=file]{display:none}
+.csv-hint{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px}
+
+/* toast */
+#toast{position:fixed;bottom:22px;right:22px;z-index:1000;background:var(--sur2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--text);opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+#toast.show{opacity:1;transform:translateY(0)}
+
+/* spinner */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--acc);border-radius:50%;animation:rot .7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* progress */
+.prog-bar-wrap{height:2px;background:var(--border);border-radius:1px;overflow:hidden;margin-bottom:14px}
+.prog-bar{height:100%;background:var(--acc);border-radius:1px;transition:width .3s;box-shadow:0 0 6px var(--acc);width:0%}
+
+/* scrollbar global */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* responsive */
+@media(max-width:900px){
+  .alloc-section{grid-template-columns:1fr}
+  .sidebar{width:200px}
+}
+@media(max-width:640px){
+  .sidebar{display:none}
+  .pos-add-row{grid-template-columns:70px 1fr 80px 80px 80px 28px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">PM</div>
+    <div>
+      <div class="logo-title">PORTFOLIO.MGR</div>
+      <div class="logo-sub">GESTIÓN DE CARTERAS · BYMA</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <span class="hdr-clock" id="clock">--:--:--</span>
+    <button class="btn btn-blue" onclick="openImportCSV()">↑ IMPORTAR CSV</button>
+    <button class="btn btn-acc" id="btnRefresh" onclick="refreshPrices()">⟳ ACTUALIZAR</button>
+    <button class="btn btn-acc" onclick="openNewClient()">+ CLIENTE</button>
+  </div>
+</header>
+
+<!-- FX STRIP -->
+<div class="fx-strip">
+  <div class="fx-card">
+    <div class="fx-label">MEP (USD)</div>
+    <div class="fx-val" id="fxMep">—</div>
+    <div class="fx-hint">DOLARAPI</div>
+  </div>
+  <div class="fx-card">
+    <div class="fx-label">CABLE (EXT)</div>
+    <div class="fx-val blue" id="fxCable">—</div>
+    <div class="fx-hint">DOLARAPI</div>
+  </div>
+  <div class="fx-card">
+    <div class="fx-label">AUM TOTAL</div>
+    <div class="fx-val plain" id="fxAum">—</div>
+    <div class="fx-hint">todos los clientes · ARS</div>
+  </div>
+  <div class="fx-card">
+    <div class="fx-label">AUM USD</div>
+    <div class="fx-val blue" id="fxAumUsd">—</div>
+    <div class="fx-hint">al CCL</div>
+  </div>
+  <div class="fx-card">
+    <div class="fx-label">P&L TOTAL</div>
+    <div class="fx-val" id="fxPnl" style="color:var(--muted)">—</div>
+    <div class="fx-hint">ganancia / pérdida ARS</div>
+  </div>
+  <div class="fx-card">
+    <div class="fx-label">CLIENTES</div>
+    <div class="fx-val plain" id="fxClients">0</div>
+    <div class="fx-hint">carteras activas</div>
+  </div>
+</div>
+
+<!-- APP BODY -->
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-header">
+      <span class="sb-title">CLIENTES</span>
+      <button class="sb-btn" onclick="openNewClient()">+ Nuevo</button>
+    </div>
+    <div class="client-list" id="clientList">
+      <div style="padding:20px 16px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:10px">
+        Sin clientes.<br>Agregá uno con el botón +
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN PANEL -->
+  <div class="main-panel">
+    <div class="tabs">
+      <div class="tab on" onclick="setTab('overview',this)">RESUMEN</div>
+      <div class="tab" onclick="setTab('positions',this)">POSICIONES</div>
+      <div class="tab" onclick="setTab('allocation',this)">DISTRIBUCIÓN</div>
+    </div>
+
+    <div class="tab-content">
+
+      <!-- OVERVIEW TAB -->
+      <div class="tab-pane on" id="pane-overview">
+        <div class="empty" id="emptyOverview">
+          <div class="empty-icon">◈</div>
+          <p>Seleccioná un cliente para ver su cartera</p>
+        </div>
+        <div id="overviewContent" style="display:none">
+          <div class="ov-header">
+            <div>
+              <div class="ov-name" id="ovName">—</div>
+              <div class="ov-sub" id="ovSub">—</div>
+            </div>
+            <div class="ov-actions">
+              <button class="btn btn-ghost" onclick="editCurrentClient()">✎ Editar</button>
+              <button class="btn btn-ghost" onclick="deleteCurrentClient()" style="border-color:rgba(255,69,96,.3);color:var(--dn)">✕ Eliminar</button>
+            </div>
+          </div>
+          <div class="metric-grid">
+            <div class="metric-card">
+              <div class="metric-label">VALOR TOTAL ARS</div>
+              <div class="metric-val" id="ovValArs" style="color:var(--acc)">—</div>
+              <div class="metric-sub" id="ovValArsSub">—</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">VALOR USD (CCL)</div>
+              <div class="metric-val" id="ovValUsd" style="color:var(--acc2)">—</div>
+              <div class="metric-sub" id="ovValUsdSub">—</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">P&L ARS</div>
+              <div class="metric-val" id="ovPnlArs">—</div>
+              <div class="metric-sub" id="ovPnlArsSub">—</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">P&L %</div>
+              <div class="metric-val" id="ovPnlPct">—</div>
+              <div class="metric-sub">vs precio promedio de compra</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">POSICIONES</div>
+              <div class="metric-val plain" id="ovPositions" style="color:var(--text)">—</div>
+              <div class="metric-sub">instrumentos activos</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">ÚLTIMA ACTUALIZACIÓN</div>
+              <div class="metric-val" id="ovLastUpdate" style="color:var(--text);font-size:14px">—</div>
+              <div class="metric-sub">precios de mercado</div>
+            </div>
+          </div>
+          <!-- quick allocation preview -->
+          <div class="alloc-section" id="ovAllocSection">
+            <div class="chart-card">
+              <div class="chart-title">DISTRIBUCIÓN POR TIPO</div>
+              <div class="donut-wrap">
+                <svg class="donut-svg" width="100" height="100" viewBox="0 0 100 100" id="donutType"></svg>
+                <div class="legend" id="legendType"></div>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">TOP POSICIONES</div>
+              <div class="bar-chart" id="topPositions"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POSITIONS TAB -->
+      <div class="tab-pane" id="pane-positions">
+        <div class="empty" id="emptyPositions">
+          <div class="empty-icon">◈</div>
+          <p>Seleccioná un cliente para ver posiciones</p>
+        </div>
+        <div id="positionsContent" style="display:none">
+          <div class="prog-bar-wrap" id="progWrap" style="display:none">
+            <div class="prog-bar" id="progBar"></div>
+          </div>
+          <div class="pos-section">
+            <div class="pos-header">
+              <span class="pos-title">POSICIONES · <span id="posCount">0</span> INSTRUMENTOS</span>
+              <input class="pos-search" type="text" placeholder="Buscar..." oninput="filterPositions(this.value)" id="posSearch">
+            </div>
+            <div style="overflow-x:auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="text-align:left">INSTRUMENTO</th>
+                    <th onclick="sortPos('tipo')">TIPO</th>
+                    <th onclick="sortPos('cantidad')">CANTIDAD</th>
+                    <th onclick="sortPos('ppc')">P.PROMEDIO</th>
+                    <th onclick="sortPos('precioActual')">PRECIO ACT.</th>
+                    <th onclick="sortPos('valorTotal')">VALOR TOTAL</th>
+                    <th onclick="sortPos('pnlArs')">P&L ARS</th>
+                    <th onclick="sortPos('pnlPct')">P&L %</th>
+                    <th onclick="sortPos('peso')">PESO</th>
+                    <th>ACCIONES</th>
+                  </tr>
+                </thead>
+                <tbody id="posTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALLOCATION TAB -->
+      <div class="tab-pane" id="pane-allocation">
+        <div class="empty" id="emptyAlloc">
+          <div class="empty-icon">◈</div>
+          <p>Seleccioná un cliente para ver distribución</p>
+        </div>
+        <div id="allocContent" style="display:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="chart-card">
+              <div class="chart-title">POR TIPO DE INSTRUMENTO</div>
+              <div class="donut-wrap">
+                <svg class="donut-svg" width="130" height="130" viewBox="0 0 130 130" id="donutType2"></svg>
+                <div class="legend" id="legendType2"></div>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">POR MONEDA</div>
+              <div class="donut-wrap">
+                <svg class="donut-svg" width="130" height="130" viewBox="0 0 130 130" id="donutMoneda"></svg>
+                <div class="legend" id="legendMoneda"></div>
+              </div>
+            </div>
+            <div class="chart-card" style="grid-column:1/-1">
+              <div class="chart-title">DISTRIBUCIÓN POR INSTRUMENTO</div>
+              <div class="bar-chart" id="allocBars"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tab-content -->
+  </div><!-- /main-panel -->
+</div><!-- /app-body -->
+
+<!-- MODAL: NUEVO / EDITAR CLIENTE -->
+<div class="modal-overlay" id="modalClient">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modalClientTitle">NUEVO CLIENTE</span>
+      <span class="modal-close" onclick="closeModal('modalClient')">✕</span>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">DATOS DEL CLIENTE</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>NOMBRE</label>
+          <input type="text" id="clientName" placeholder="Ej: Juan García">
+        </div>
+        <div class="field">
+          <label>APELLIDO</label>
+          <input type="text" id="clientLast" placeholder="Ej: López">
+        </div>
+        <div class="field">
+          <label>EMAIL</label>
+          <input type="email" id="clientEmail" placeholder="juan@email.com">
+        </div>
+        <div class="field">
+          <label>COMITENTE / CUENTA</label>
+          <input type="text" id="clientAccount" placeholder="Ej: 12345">
+        </div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">POSICIONES</div>
+      <div class="pos-row-header">
+        <span>TICKER</span><span>EMPRESA / DESC.</span><span>CANTIDAD</span><span>P.PROMEDIO ARS</span><span>TIPO</span><span></span>
+      </div>
+      <div class="pos-add-list" id="posAddList"></div>
+      <button class="add-pos-btn" onclick="addPosRow()">+ AGREGAR POSICIÓN</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalClient')">CANCELAR</button>
+      <button class="btn btn-acc" onclick="saveClient()">GUARDAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: IMPORTAR CSV -->
+<div class="modal-overlay" id="modalCSV">
+  <div class="modal">
+    <div class="modal-title">
+      <span>IMPORTAR CSV</span>
+      <span class="modal-close" onclick="closeModal('modalCSV')">✕</span>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px">
+      El CSV debe tener las columnas: <span style="color:var(--acc);font-family:var(--mono)">nombre, apellido, ticker, cantidad, ppc, tipo</span><br>
+      donde tipo = CEDEAR · ACCION · BONO · ON · OTRO
+    </p>
+    <div class="csv-area" onclick="document.getElementById('csvFile').click()">
+      <div style="font-size:28px;opacity:.3;margin-bottom:8px">↑</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted)">Click para seleccionar archivo CSV</div>
+      <input type="file" id="csvFile" accept=".csv" onchange="handleCSV(event)">
+    </div>
+    <div class="csv-hint">También podés pegar el contenido del CSV abajo:</div>
+    <textarea id="csvText" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:10px;border-radius:7px;margin-top:8px;height:120px;resize:vertical;outline:none" placeholder="nombre,apellido,ticker,cantidad,ppc,tipo&#10;Juan,García,AAPL,100,15000,CEDEAR&#10;Juan,García,GGAL,500,2800,ACCION"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalCSV')">CANCELAR</button>
+      <button class="btn btn-acc" onclick="importCSV()">IMPORTAR</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let clients = JSON.parse(localStorage.getItem('pm_clients') || '[]');
+let prices  = JSON.parse(localStorage.getItem('pm_prices')  || '{}');
+let mep = 0, cable = 0;
+let selectedClient = null;
+let editingClientId = null;
+let posSortKey = 'valorTotal', posSortDir = -1;
+
+// ═══════════════════════════════════════════════════════
+//  CLOCK
+// ═══════════════════════════════════════════════════════
+function tick() {
+  const n = new Date();
+  document.getElementById('clock').textContent = n.toLocaleTimeString('es-AR');
+}
+setInterval(tick, 1000); tick();
+
+// ═══════════════════════════════════════════════════════
+//  PERSIST
+// ═══════════════════════════════════════════════════════
+function save() {
+  localStorage.setItem('pm_clients', JSON.stringify(clients));
+  localStorage.setItem('pm_prices',  JSON.stringify(prices));
+}
+
+// ═══════════════════════════════════════════════════════
+//  FETCH FX
+// ═══════════════════════════════════════════════════════
+async function fetchFX() {
+  try {
+    const r = await fetch('https://dolarapi.com/v1/dolares/bolsa');
+    if (r.ok) { const d = await r.json(); mep = d.venta || 0; }
+    const r2 = await fetch('https://dolarapi.com/v1/dolares/contadoconliqui');
+    if (r2.ok) { const d2 = await r2.json(); cable = d2.venta || 0; }
+  } catch {}
+  const fmt0 = v => v > 0 ? '$' + v.toLocaleString('es-AR', {minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+  document.getElementById('fxMep').textContent   = fmt0(mep);
+  document.getElementById('fxCable').textContent = fmt0(cable);
+}
+
+// ═══════════════════════════════════════════════════════
+//  FETCH BYMA PRICES via Anthropic API
+// ═══════════════════════════════════════════════════════
+async function fetchBYMAPrices(tickers) {
+  if (!tickers.length) return {};
+  const unique = [...new Set(tickers)];
+  const prompt = `Consultá el endpoint público de Open BYMA Data para obtener precios actuales de los siguientes instrumentos del mercado argentino (CEDEARs, acciones, bonos, ONs):
+Tickers: ${unique.join(', ')}
+
+URLs a consultar:
+- CEDEARs NYSE/NASDAQ: https://open.bymadata.com.ar/vanoms-be-core/rest/api/bymadata/free/nyse-nasdaq-cedears
+- Acciones: https://open.bymadata.com.ar/vanoms-be-core/rest/api/bymadata/free/leading-shares (líderes) y https://open.bymadata.com.ar/vanoms-be-core/rest/api/bymadata/free/general-board
+- Bonos soberanos: https://open.bymadata.com.ar/vanoms-be-core/rest/api/bymadata/free/bonds
+- ONs: https://open.bymadata.com.ar/vanoms-be-core/rest/api/bymadata/free/on
+
+Para cada ticker devolvé el último precio operado en ARS (campo "trade" o "last").
+Devolvé SOLO JSON válido sin markdown:
+{
+  "prices": {
+    "AAPL": 15200,
+    "GGAL": 2850,
+    "AL30": 67800
+  }
+}
+Si algún ticker no tiene precio disponible, no lo incluyas. Solo el JSON.`;
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        tools: [{type: 'web_search_20250305', name: 'web_search'}],
+        messages: [{role: 'user', content: prompt}]
+      })
+    });
+    const d = await r.json();
+    let txt = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    txt = txt.replace(/```json|```/g,'').trim();
+    const i1=txt.indexOf('{'),i2=txt.lastIndexOf('}');
+    if (i1===-1) return {};
+    const parsed = JSON.parse(txt.slice(i1,i2+1));
+    return parsed.prices || {};
+  } catch(e) { console.error(e); return {}; }
+}
+
+// ═══════════════════════════════════════════════════════
+//  REFRESH PRICES
+// ═══════════════════════════════════════════════════════
+async function refreshPrices() {
+  const btn = document.getElementById('btnRefresh');
+  btn.disabled = true; btn.textContent = '⟳ ACTUALIZANDO…';
+
+  await fetchFX();
+
+  // Collect all unique tickers across all clients
+  const allTickers = [];
+  clients.forEach(c => c.positions.forEach(p => allTickers.push(p.ticker)));
+  const unique = [...new Set(allTickers)];
+
+  if (unique.length) {
+    showProg(10);
+    const fetched = await fetchBYMAPrices(unique);
+    showProg(90);
+    Object.assign(prices, fetched);
+    save();
+  }
+
+  showProg(100);
+  setTimeout(() => hideProg(), 600);
+
+  updateFxStrip();
+  renderSidebar();
+  if (selectedClient) renderClientView(selectedClient);
+  document.getElementById('ovLastUpdate').textContent = new Date().toLocaleTimeString('es-AR');
+  toast(`✓ Precios actualizados · ${unique.length} instrumentos`);
+  btn.disabled = false; btn.textContent = '⟳ ACTUALIZAR';
+}
+
+function showProg(p) {
+  document.getElementById('progWrap').style.display = 'block';
+  document.getElementById('progBar').style.width = p + '%';
+}
+function hideProg() {
+  document.getElementById('progWrap').style.display = 'none';
+  document.getElementById('progBar').style.width = '0%';
+}
+
+// ═══════════════════════════════════════════════════════
+//  FX STRIP GLOBAL
+// ═══════════════════════════════════════════════════════
+function updateFxStrip() {
+  const ccl = cable || mep || 1;
+  let totalArs = 0, totalCost = 0;
+  clients.forEach(c => {
+    c.positions.forEach(p => {
+      const px = prices[p.ticker] || 0;
+      totalArs  += px * p.cantidad;
+      totalCost += (p.ppc || 0) * p.cantidad;
+    });
+  });
+  const pnl = totalArs - totalCost;
+  document.getElementById('fxAum').textContent      = totalArs > 0 ? '$' + fmt(totalArs, 0) : '—';
+  document.getElementById('fxAumUsd').textContent   = totalArs > 0 && ccl > 0 ? 'U$S ' + fmt(totalArs/ccl, 0) : '—';
+  const pnlEl = document.getElementById('fxPnl');
+  pnlEl.textContent = totalCost > 0 ? (pnl >= 0 ? '+' : '') + '$' + fmt(pnl, 0) : '—';
+  pnlEl.style.color = pnl > 0 ? 'var(--up)' : pnl < 0 ? 'var(--dn)' : 'var(--muted)';
+  document.getElementById('fxClients').textContent = clients.length;
+}
+
+// ═══════════════════════════════════════════════════════
+//  SIDEBAR
+// ═══════════════════════════════════════════════════════
+const COLORS = ['#00e5b0','#3d9bff','#f5a623','#bb8fcf','#e74c3c','#1abc9c','#e67e22','#9b59b6','#27ae60','#2980b9'];
+
+function renderSidebar() {
+  const list = document.getElementById('clientList');
+  if (!clients.length) {
+    list.innerHTML = `<div style="padding:20px 16px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:10px">Sin clientes.<br>Agregá uno con el botón +</div>`;
+    return;
+  }
+  list.innerHTML = clients.map((c, i) => {
+    const vals = calcClient(c);
+    const pnlCls = vals.pnl > 0 ? 'c-up' : vals.pnl < 0 ? 'c-dn' : 'c-ze';
+    const pnlStr = vals.pnl !== 0 ? (vals.pnl > 0 ? '+' : '') + '$' + fmt(vals.pnl, 0) : '$0';
+    const color = COLORS[i % COLORS.length];
+    const initials = ((c.nombre || '?')[0] + (c.apellido || '?')[0]).toUpperCase();
+    const active = selectedClient?.id === c.id ? ' active' : '';
+    return `<div class="client-item${active}" onclick="selectClient('${c.id}')">
+      <div class="client-avatar" style="background:${color}">${initials}</div>
+      <div class="client-info">
+        <div class="client-name">${c.nombre} ${c.apellido}</div>
+        <div class="client-val">${vals.totalArs > 0 ? '$' + fmt(vals.totalArs, 0) + ' ARS' : 'Sin posiciones'}</div>
+      </div>
+      <div class="client-pnl ${pnlCls}">${vals.totalArs > 0 ? pnlStr : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  CALC CLIENT
+// ═══════════════════════════════════════════════════════
+function calcClient(c) {
+  let totalArs = 0, totalCost = 0;
+  c.positions.forEach(p => {
+    const px = prices[p.ticker] || 0;
+    totalArs  += px * p.cantidad;
+    totalCost += (p.ppc || 0) * p.cantidad;
+  });
+  const pnl    = totalArs - totalCost;
+  const pnlPct = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
+  const ccl    = cable || mep || 1;
+  const totalUsd = ccl > 0 ? totalArs / ccl : 0;
+  return { totalArs, totalCost, pnl, pnlPct, totalUsd };
+}
+
+// ═══════════════════════════════════════════════════════
+//  SELECT CLIENT
+// ═══════════════════════════════════════════════════════
+function selectClient(id) {
+  selectedClient = clients.find(c => c.id === id);
+  renderSidebar();
+  renderClientView(selectedClient);
+}
+
+function renderClientView(c) {
+  if (!c) return;
+  // Show all content areas
+  ['overview','positions','allocation'].forEach(t => {
+    document.getElementById('empty'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = 'none';
+  });
+  document.getElementById('overviewContent').style.display   = 'block';
+  document.getElementById('positionsContent').style.display  = 'block';
+  document.getElementById('allocContent').style.display      = 'block';
+
+  const vals = calcClient(c);
+  const ccl  = cable || mep || 1;
+
+  // OVERVIEW
+  document.getElementById('ovName').textContent = `${c.nombre} ${c.apellido}`;
+  document.getElementById('ovSub').textContent  = `Cuenta: ${c.cuenta || '—'} · ${c.email || '—'} · ${c.positions.length} posiciones`;
+  document.getElementById('ovValArs').textContent    = vals.totalArs > 0 ? '$' + fmt(vals.totalArs, 0) : '—';
+  document.getElementById('ovValArsSub').textContent = `Costo: $${fmt(vals.totalCost, 0)}`;
+  document.getElementById('ovValUsd').textContent    = vals.totalUsd > 0 ? 'U$S ' + fmt(vals.totalUsd, 0) : '—';
+  document.getElementById('ovValUsdSub').textContent = `al CCL $${fmt(ccl, 0)}`;
+
+  const pnlEl = document.getElementById('ovPnlArs');
+  pnlEl.textContent = (vals.pnl >= 0 ? '+' : '') + '$' + fmt(vals.pnl, 0);
+  pnlEl.style.color = vals.pnl > 0 ? 'var(--up)' : vals.pnl < 0 ? 'var(--dn)' : 'var(--muted)';
+  document.getElementById('ovPnlArsSub').textContent = vals.pnl > 0 ? 'ganancia' : vals.pnl < 0 ? 'pérdida' : 'sin cambio';
+
+  const pnlPctEl = document.getElementById('ovPnlPct');
+  pnlPctEl.textContent = (vals.pnlPct >= 0 ? '+' : '') + vals.pnlPct.toFixed(2) + '%';
+  pnlPctEl.style.color = vals.pnlPct > 0 ? 'var(--up)' : vals.pnlPct < 0 ? 'var(--dn)' : 'var(--muted)';
+
+  document.getElementById('ovPositions').textContent  = c.positions.length;
+  if (!document.getElementById('ovLastUpdate').textContent.includes(':'))
+    document.getElementById('ovLastUpdate').textContent = '—';
+
+  renderDonut(c, 'donutType', 'legendType', 'small');
+  renderTopPositions(c);
+  renderPositionsTable(c);
+  renderAllocation(c);
+}
+
+// ═══════════════════════════════════════════════════════
+//  POSITIONS TABLE
+// ═══════════════════════════════════════════════════════
+let posFilterQ = '';
+function filterPositions(q) { posFilterQ = q.toLowerCase(); renderPositionsTable(selectedClient); }
+function sortPos(key) {
+  if (posSortKey === key) posSortDir *= -1;
+  else { posSortKey = key; posSortDir = -1; }
+  renderPositionsTable(selectedClient);
+}
+
+function renderPositionsTable(c) {
+  if (!c) return;
+  const tbody = document.getElementById('posTbody');
+  document.getElementById('posCount').textContent = c.positions.length;
+
+  const totalArs = c.positions.reduce((s, p) => s + (prices[p.ticker]||0)*p.cantidad, 0);
+
+  let data = c.positions.map(p => {
+    const px    = prices[p.ticker] || 0;
+    const val   = px * p.cantidad;
+    const cost  = (p.ppc || 0) * p.cantidad;
+    const pnl   = val - cost;
+    const pnlPct = cost > 0 ? (pnl/cost)*100 : 0;
+    const peso  = totalArs > 0 ? (val/totalArs)*100 : 0;
+    return {...p, precioActual: px, valorTotal: val, pnlArs: pnl, pnlPct, peso};
+  });
+
+  if (posFilterQ) data = data.filter(p => p.ticker.toLowerCase().includes(posFilterQ) || (p.nombre||'').toLowerCase().includes(posFilterQ));
+
+  data.sort((a,b) => {
+    const av = a[posSortKey] ?? 0, bv = b[posSortKey] ?? 0;
+    if (typeof av === 'string') return posSortDir * av.localeCompare(bv);
+    return posSortDir * (bv - av);
+  });
+
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--muted);font-family:var(--mono);font-size:11px">Sin posiciones</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(p => {
+    const pnlCls = p.pnlArs > 0 ? 'pnl-pos' : p.pnlArs < 0 ? 'pnl-neg' : 'pnl-ze';
+    const pctCls = p.pnlPct > 0 ? 'pnl-pos' : p.pnlPct < 0 ? 'pnl-neg' : 'pnl-ze';
+    const typeCls = ({CEDEAR:'type-cedear',ACCION:'type-accion',BONO:'type-bono',ON:'type-on'})[p.tipo] || 'type-otro';
+    const base = p.ticker.replace(/D$/,'').replace(/\s/g,'');
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <img src="https://assets.parqet.com/logos/symbol/${base}?format=png" width="24" height="24" style="border-radius:6px;background:var(--sur3)" onerror="this.style.display='none'">
+          <div>
+            <div class="td-sym">${p.ticker}</div>
+            <div class="td-name">${p.nombre || '—'}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="td-type ${typeCls}">${p.tipo}</span></td>
+      <td class="td-mono">${fmt(p.cantidad, 0)}</td>
+      <td class="td-mono">${p.ppc > 0 ? '$'+fmt(p.ppc,2) : '—'}</td>
+      <td class="td-mono" style="color:${p.precioActual>0?'var(--acc)':'var(--muted)'}">${p.precioActual > 0 ? '$'+fmt(p.precioActual,2) : '—'}</td>
+      <td class="td-mono">${p.valorTotal > 0 ? '$'+fmt(p.valorTotal,0) : '—'}</td>
+      <td class="${pnlCls}">${p.pnlArs !== 0 ? (p.pnlArs>0?'+':'')+'$'+fmt(p.pnlArs,0) : '—'}</td>
+      <td class="${pctCls}">${p.pnlPct !== 0 ? (p.pnlPct>0?'+':'')+p.pnlPct.toFixed(2)+'%' : '—'}</td>
+      <td class="td-mono" style="color:var(--muted)">${p.peso.toFixed(1)}%</td>
+      <td>
+        <button onclick="removePosition('${c.id}','${p.ticker}')" style="background:transparent;border:1px solid rgba(255,69,96,.3);color:var(--dn);border-radius:5px;padding:3px 8px;cursor:pointer;font-size:11px">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  CHARTS
+// ═══════════════════════════════════════════════════════
+const TYPE_COLORS = {CEDEAR:'#00e5b0',ACCION:'#3d9bff',BONO:'#f5a623',ON:'#bb8fcf',OTRO:'#48607a'};
+const MONEDA_COLORS = {ARS:'#00e5b0',USD:'#3d9bff',MIXTO:'#f5a623'};
+
+function renderDonut(c, svgId, legId, size='large') {
+  const dim = size === 'small' ? 100 : 130;
+  const cx = dim/2, cy = dim/2, r = dim*0.36, stroke = dim*0.14;
+
+  // Group by type
+  const totalArs = c.positions.reduce((s,p) => s+(prices[p.ticker]||0)*p.cantidad, 0);
+  const groups = {};
+  c.positions.forEach(p => {
+    const val = (prices[p.ticker]||0)*p.cantidad;
+    groups[p.tipo] = (groups[p.tipo]||0) + val;
+  });
+
+  const svg = document.getElementById(svgId);
+  const leg = document.getElementById(legId);
+  if (!svg) return;
+
+  if (!totalArs) {
+    svg.innerHTML = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#1c2333" stroke-width="${stroke}"/>`;
+    if (leg) leg.innerHTML = `<span style="font-size:10px;color:var(--muted);font-family:var(--mono)">Sin datos</span>`;
+    return;
+  }
+
+  let paths = '', startAngle = -Math.PI/2;
+  const entries = Object.entries(groups).sort((a,b)=>b[1]-a[1]);
+  entries.forEach(([tipo, val]) => {
+    const pct = val/totalArs;
+    const angle = pct * 2 * Math.PI;
+    const x1 = cx + r*Math.cos(startAngle);
+    const y1 = cy + r*Math.sin(startAngle);
+    const x2 = cx + r*Math.cos(startAngle + angle);
+    const y2 = cy + r*Math.sin(startAngle + angle);
+    const large = angle > Math.PI ? 1 : 0;
+    const color = TYPE_COLORS[tipo] || '#48607a';
+    paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z" fill="${color}" opacity="0.85"/>`;
+    startAngle += angle;
+  });
+  // inner circle
+  paths += `<circle cx="${cx}" cy="${cy}" r="${r*0.55}" fill="#0d1117"/>`;
+  svg.innerHTML = paths;
+
+  if (leg) {
+    leg.innerHTML = entries.map(([tipo, val]) => {
+      const pct = totalArs > 0 ? ((val/totalArs)*100).toFixed(1) : '0';
+      return `<div class="leg-row">
+        <div class="leg-dot" style="background:${TYPE_COLORS[tipo]||'#48607a'}"></div>
+        <span class="leg-label">${tipo}</span>
+        <span class="leg-pct">${pct}%</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+function renderTopPositions(c) {
+  const el = document.getElementById('topPositions');
+  if (!el) return;
+  const totalArs = c.positions.reduce((s,p) => s+(prices[p.ticker]||0)*p.cantidad, 0);
+  const sorted = [...c.positions]
+    .map(p => ({...p, val: (prices[p.ticker]||0)*p.cantidad}))
+    .sort((a,b) => b.val-a.val).slice(0,8);
+  const max = sorted[0]?.val || 1;
+  el.innerHTML = sorted.map(p => {
+    const pct = totalArs > 0 ? ((p.val/totalArs)*100).toFixed(1) : '0';
+    const barPct = (p.val/max*100).toFixed(1);
+    const color = TYPE_COLORS[p.tipo] || '#48607a';
+    return `<div class="bar-row">
+      <span class="bar-label">${p.ticker}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${barPct}%;background:${color}"></div></div>
+      <span class="bar-pct">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function renderAllocation(c) {
+  renderDonut(c, 'donutType2', 'legendType2', 'large');
+
+  // Moneda donut
+  const totalArs = c.positions.reduce((s,p) => s+(prices[p.ticker]||0)*p.cantidad, 0);
+  const monedaGroups = {};
+  c.positions.forEach(p => {
+    const val = (prices[p.ticker]||0)*p.cantidad;
+    const mon = p.tipo === 'CEDEAR' ? 'USD' : p.tipo === 'BONO' || p.tipo === 'ON' ? 'USD' : 'ARS';
+    monedaGroups[mon] = (monedaGroups[mon]||0) + val;
+  });
+
+  const svg2 = document.getElementById('donutMoneda');
+  const leg2 = document.getElementById('legendMoneda');
+  if (svg2 && totalArs > 0) {
+    const dim = 130, cx=dim/2, cy=dim/2, r=dim*0.36;
+    let paths = '', startAngle = -Math.PI/2;
+    const entries = Object.entries(monedaGroups).sort((a,b)=>b[1]-a[1]);
+    entries.forEach(([mon, val]) => {
+      const pct = val/totalArs;
+      const angle = pct * 2 * Math.PI;
+      const x1 = cx + r*Math.cos(startAngle);
+      const y1 = cy + r*Math.sin(startAngle);
+      const x2 = cx + r*Math.cos(startAngle + angle);
+      const y2 = cy + r*Math.sin(startAngle + angle);
+      const large = angle > Math.PI ? 1 : 0;
+      const color = MONEDA_COLORS[mon] || '#48607a';
+      paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z" fill="${color}" opacity="0.85"/>`;
+      startAngle += angle;
+    });
+    paths += `<circle cx="${cx}" cy="${cy}" r="${r*0.55}" fill="#0d1117"/>`;
+    svg2.innerHTML = paths;
+    if (leg2) leg2.innerHTML = entries.map(([mon, val]) => {
+      const pct = ((val/totalArs)*100).toFixed(1);
+      return `<div class="leg-row"><div class="leg-dot" style="background:${MONEDA_COLORS[mon]||'#48607a'}"></div><span class="leg-label">${mon}</span><span class="leg-pct">${pct}%</span></div>`;
+    }).join('');
+  }
+
+  // All bars
+  const allBars = document.getElementById('allocBars');
+  if (allBars) {
+    const sorted = [...c.positions].map(p => ({...p,val:(prices[p.ticker]||0)*p.cantidad})).sort((a,b)=>b.val-a.val);
+    const max = sorted[0]?.val||1;
+    allBars.innerHTML = sorted.map(p => {
+      const pct = totalArs>0 ? ((p.val/totalArs)*100).toFixed(1) : '0';
+      const barW = (p.val/max*100).toFixed(1);
+      const color = TYPE_COLORS[p.tipo]||'#48607a';
+      return `<div class="bar-row">
+        <span class="bar-label" style="width:100px">${p.ticker}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${barW}%;background:${color}"></div></div>
+        <span class="bar-pct">${pct}%</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════════════
+function setTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('pane-'+id).classList.add('on');
+}
+
+// ═══════════════════════════════════════════════════════
+//  MODAL: NEW / EDIT CLIENT
+// ═══════════════════════════════════════════════════════
+function openNewClient() {
+  editingClientId = null;
+  document.getElementById('modalClientTitle').textContent = 'NUEVO CLIENTE';
+  document.getElementById('clientName').value    = '';
+  document.getElementById('clientLast').value    = '';
+  document.getElementById('clientEmail').value   = '';
+  document.getElementById('clientAccount').value = '';
+  document.getElementById('posAddList').innerHTML = '';
+  addPosRow();
+  openModal('modalClient');
+}
+
+function editCurrentClient() {
+  if (!selectedClient) return;
+  editingClientId = selectedClient.id;
+  document.getElementById('modalClientTitle').textContent = 'EDITAR CLIENTE';
+  document.getElementById('clientName').value    = selectedClient.nombre || '';
+  document.getElementById('clientLast').value    = selectedClient.apellido || '';
+  document.getElementById('clientEmail').value   = selectedClient.email || '';
+  document.getElementById('clientAccount').value = selectedClient.cuenta || '';
+  const list = document.getElementById('posAddList');
+  list.innerHTML = '';
+  selectedClient.positions.forEach(p => addPosRow(p));
+  if (!selectedClient.positions.length) addPosRow();
+  openModal('modalClient');
+}
+
+let posRowId = 0;
+function addPosRow(p = null) {
+  const id = ++posRowId;
+  const tipos = ['CEDEAR','ACCION','BONO','ON','OTRO'];
+  const sel = tipos.map(t => `<option value="${t}" ${p?.tipo===t?'selected':''}>${t}</option>`).join('');
+  const div = document.createElement('div');
+  div.className = 'pos-add-row';
+  div.id = 'posrow-'+id;
+  div.innerHTML = `
+    <input type="text" placeholder="AAPL" value="${p?.ticker||''}" class="pr-ticker">
+    <input type="text" placeholder="Descripción" value="${p?.nombre||''}" class="pr-nombre">
+    <input type="number" placeholder="100" value="${p?.cantidad||''}" min="0" class="pr-cant">
+    <input type="number" placeholder="15000" value="${p?.ppc||''}" min="0" step="0.01" class="pr-ppc">
+    <select class="pr-tipo">${sel}</select>
+    <button class="remove-pos" onclick="document.getElementById('posrow-${id}').remove()">✕</button>`;
+  document.getElementById('posAddList').appendChild(div);
+}
+
+function saveClient() {
+  const nombre   = document.getElementById('clientName').value.trim();
+  const apellido = document.getElementById('clientLast').value.trim();
+  if (!nombre) { toast('Ingresá el nombre del cliente', true); return; }
+
+  const rows = document.querySelectorAll('.pos-add-row');
+  const positions = [];
+  rows.forEach(row => {
+    const ticker = row.querySelector('.pr-ticker').value.trim().toUpperCase();
+    if (!ticker) return;
+    positions.push({
+      ticker,
+      nombre:   row.querySelector('.pr-nombre').value.trim(),
+      cantidad: parseFloat(row.querySelector('.pr-cant').value)  || 0,
+      ppc:      parseFloat(row.querySelector('.pr-ppc').value)   || 0,
+      tipo:     row.querySelector('.pr-tipo').value,
+    });
+  });
+
+  if (editingClientId) {
+    const idx = clients.findIndex(c => c.id === editingClientId);
+    if (idx !== -1) clients[idx] = {...clients[idx], nombre, apellido, email: document.getElementById('clientEmail').value, cuenta: document.getElementById('clientAccount').value, positions};
+  } else {
+    clients.push({ id: Date.now().toString(), nombre, apellido, email: document.getElementById('clientEmail').value, cuenta: document.getElementById('clientAccount').value, positions });
+  }
+
+  save();
+  closeModal('modalClient');
+  renderSidebar();
+  updateFxStrip();
+  if (editingClientId && selectedClient?.id === editingClientId) {
+    selectedClient = clients.find(c=>c.id===editingClientId);
+    renderClientView(selectedClient);
+  }
+  toast(`✓ Cliente ${nombre} ${apellido} guardado`);
+}
+
+function deleteCurrentClient() {
+  if (!selectedClient) return;
+  if (!confirm(`¿Eliminar a ${selectedClient.nombre} ${selectedClient.apellido}?`)) return;
+  clients = clients.filter(c=>c.id!==selectedClient.id);
+  selectedClient = null;
+  save();
+  renderSidebar();
+  updateFxStrip();
+  ['overview','positions','allocation'].forEach(t => {
+    document.getElementById('empty'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = 'flex';
+  });
+  document.getElementById('overviewContent').style.display  = 'none';
+  document.getElementById('positionsContent').style.display = 'none';
+  document.getElementById('allocContent').style.display     = 'none';
+  toast('Cliente eliminado');
+}
+
+function removePosition(clientId, ticker) {
+  const c = clients.find(cl=>cl.id===clientId);
+  if (!c) return;
+  c.positions = c.positions.filter(p=>p.ticker!==ticker);
+  save();
+  renderClientView(c);
+  renderSidebar();
+  updateFxStrip();
+  toast(`✓ Posición ${ticker} eliminada`);
+}
+
+// ═══════════════════════════════════════════════════════
+//  CSV IMPORT
+// ═══════════════════════════════════════════════════════
+function openImportCSV() { openModal('modalCSV'); }
+
+function handleCSV(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { document.getElementById('csvText').value = ev.target.result; };
+  reader.readAsText(file);
+}
+
+function importCSV() {
+  const raw = document.getElementById('csvText').value.trim();
+  if (!raw) { toast('Pegá o seleccioná un CSV primero', true); return; }
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  const header = lines[0].toLowerCase().split(',').map(h=>h.trim());
+  const idx = k => header.indexOf(k);
+
+  const map = {}; // nombre+apellido => positions[]
+  lines.slice(1).forEach(line => {
+    const cols = line.split(',').map(c=>c.trim());
+    const nombre   = cols[idx('nombre')]   || '';
+    const apellido = cols[idx('apellido')] || '';
+    const ticker   = (cols[idx('ticker')]  || '').toUpperCase();
+    if (!nombre || !ticker) return;
+    const key = nombre+'|'+apellido;
+    if (!map[key]) map[key] = {nombre, apellido, positions:[]};
+    map[key].positions.push({
+      ticker,
+      nombre:   cols[idx('descripcion')] || cols[idx('nombre_instrumento')] || '',
+      cantidad: parseFloat(cols[idx('cantidad')]) || 0,
+      ppc:      parseFloat(cols[idx('ppc')])      || 0,
+      tipo:     (cols[idx('tipo')]||'OTRO').toUpperCase(),
+    });
+  });
+
+  let added = 0, updated = 0;
+  Object.values(map).forEach(data => {
+    const existing = clients.find(c=>c.nombre===data.nombre&&c.apellido===data.apellido);
+    if (existing) {
+      data.positions.forEach(p => {
+        const ei = existing.positions.findIndex(ep=>ep.ticker===p.ticker);
+        if (ei !== -1) existing.positions[ei] = p;
+        else existing.positions.push(p);
+      });
+      updated++;
+    } else {
+      clients.push({id:Date.now().toString()+Math.random(), ...data, email:'', cuenta:''});
+      added++;
+    }
+  });
+
+  save();
+  closeModal('modalCSV');
+  document.getElementById('csvText').value = '';
+  renderSidebar();
+  updateFxStrip();
+  toast(`✓ CSV importado · ${added} clientes nuevos · ${updated} actualizados`);
+}
+
+// ═══════════════════════════════════════════════════════
+//  MODAL HELPERS
+// ═══════════════════════════════════════════════════════
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════════════════════
+//  TOAST + FORMAT
+// ═══════════════════════════════════════════════════════
+let _tt;
+function toast(msg, err=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.borderColor = err ? 'var(--dn)' : 'var(--border)';
+  el.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.classList.remove('show'), 3200);
+}
+function fmt(n, dec=2) {
+  return Number(n).toLocaleString('es-AR',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+fetchFX();
+renderSidebar();
+updateFxStrip();
+// Auto-refresh en horario de mercado
+setInterval(() => {
+  const h = new Date().getHours();
+  if (h >= 11 && h < 18 && clients.length) refreshPrices();
+}, 3 * 60 * 1000);
+</script>
+</body>
+</html>
